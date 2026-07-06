@@ -114,6 +114,10 @@
   .modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
 
   .count{color:var(--muted2);font-size:12px;font-weight:600;margin-left:2px}
+  .sync{font-size:12px;font-weight:600;margin-left:2px;padding:2px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);vertical-align:middle}
+  .sync.saving{color:var(--amber);border-color:rgba(240,179,44,.4)}
+  .sync.saved{color:var(--green);border-color:rgba(34,192,121,.4)}
+  .sync.offline{color:var(--red);border-color:rgba(255,92,92,.4)}
   @media(max-width:560px){
     .step{flex:1 1 100%}
     .add .nome{flex:1 1 100%}
@@ -123,8 +127,8 @@
 <body>
 <div class="wrap">
   <div>
-    <h1><span class="dot"></span> Baby Talks · Prospecção de Marcas</h1>
-    <div class="sub">Cadastre marcas, acompanhe os contatos e segmente quem é quem.</div>
+    <h1><span class="dot"></span> Baby Talks · Prospecção de Marcas <span class="sync" id="sync" title="Sincronização">•</span></h1>
+    <div class="sub">Cadastre marcas, acompanhe os contatos e segmente quem é quem. <span style="color:var(--muted2)">Sincroniza entre celular e PC.</span></div>
   </div>
 
   <!-- ADD -->
@@ -196,8 +200,35 @@ const ST_LABEL={parceria:'Parceria',patrocinio:'Patrocínio'};
 const CHECK='<svg width="11" height="11" viewBox="0 0 12 12"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#0a0a0a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}}
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));schedulePush()}
 function uid(){return Math.random().toString(36).slice(2,10)}
+
+/* ---- Sync (n8n + Google Sheets) ---- */
+const SYNC={
+  load:'https://n8n-n8n.xktssy.easypanel.host/webhook/bt-marcas-9fKq2Wm7Zx4Lp',
+  save:'https://n8n-n8n.xktssy.easypanel.host/webhook/bt-marcas-9fKq2Wm7Zx4Lp-save'
+};
+let pushTimer=null, pulling=false;
+function setSync(s){const e=$('#sync');if(!e)return;e.className='sync '+s;
+  e.textContent={saving:'salvando…',saved:'sincronizado',offline:'offline',sync:'carregando…'}[s]||'•';}
+function schedulePush(){
+  if(pulling)return;                 // não reenvia enquanto carrega do servidor
+  setSync('saving');clearTimeout(pushTimer);pushTimer=setTimeout(pushNow,700);
+}
+async function pushNow(){
+  try{await fetch(SYNC.save,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(data)});setSync('saved');}
+  catch(e){setSync('offline');}
+}
+async function initSync(){
+  setSync('sync');pulling=true;
+  try{
+    const r=await fetch(SYNC.load,{cache:'no-store'});
+    const remote=await r.json();
+    if(Array.isArray(remote)){data=remote;localStorage.setItem(KEY,JSON.stringify(data));}
+    setSync('saved');
+  }catch(e){setSync('offline');}
+  pulling=false;render();
+}
 
 function normLink(raw){
   raw=raw.trim();
@@ -353,7 +384,10 @@ $('#modal-save').onclick=finalize;
 $('#overlay').addEventListener('click',e=>{if(e.target.id==='overlay'){$('#overlay').classList.remove('on');pendingId=null}});
 $('#modal-motivo').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))finalize()});
 
-render();
+render();       // pinta com o cache local na hora
+initSync();     // puxa a versão do servidor e re-renderiza
+// re-sincroniza ao voltar o foco (ex: abriu no PC depois de mexer no celular)
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)initSync()});
 </script>
 </body>
 </html>
