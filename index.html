@@ -137,10 +137,9 @@
       <input type="text" class="link" id="f-link" placeholder="Cole o link do site ou do Instagram (@perfil ou instagram.com/perfil)">
     </div>
     <div class="add-row" style="margin-top:10px">
-      <input type="text" class="nome" id="f-nome" placeholder="Nome da marca (opcional — puxo do link)">
+      <input type="text" class="nome" id="f-nome" placeholder="Nome da marca (ex: Loja da Ana)">
       <select id="f-cat">
         <option value="">Categoria…</option>
-        <option value="decoracao">Decoração</option>
         <option value="servicos">Serviços</option>
         <option value="produtos">Produtos</option>
       </select>
@@ -165,7 +164,6 @@
 
   <div class="filter" id="filters" style="margin-bottom:14px">
     <span class="chip cat on" data-cat="">Todas</span>
-    <span class="chip cat" data-cat="decoracao">Decoração</span>
     <span class="chip cat" data-cat="servicos">Serviços</span>
     <span class="chip cat" data-cat="produtos">Produtos</span>
     <span style="width:1px;background:var(--border2);margin:2px 4px"></span>
@@ -195,7 +193,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY='prospeccao-marcas-v1';
 let data=load(), tab='ativas', fCat='', fSt='', fSearch='', pendingId=null;
 
-const CAT_LABEL={decoracao:'Decoração',servicos:'Serviços',produtos:'Produtos'};
+const CAT_LABEL={servicos:'Serviços',produtos:'Produtos'};
 const ST_LABEL={parceria:'Parceria',patrocinio:'Patrocínio'};
 const CHECK='<svg width="11" height="11" viewBox="0 0 12 12"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#0a0a0a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -247,6 +245,17 @@ function deriveName(raw,link){
   try{const h=new URL(link.url).hostname.replace(/^www\./,''); return h.split('.')[0].replace(/\b\w/g,c=>c.toUpperCase())}
   catch(e){return raw}
 }
+// @handle da marca (do campo salvo ou extraído da url do instagram)
+function handleOf(b){
+  if(b.handle) return b.handle;
+  if(b.ig){const m=(b.url||'').match(/instagram\.com\/([^\/?#]+)/i); if(m&&m[1]) return '@'+m[1];}
+  return '';
+}
+// texto do link mostrado: @handle (instagram) ou domínio limpo (site)
+function linkLabel(b){
+  if(b.ig) return handleOf(b)||b.url;
+  try{return new URL(b.url).hostname.replace(/^www\./,'')}catch(e){return b.url}
+}
 
 function add(){
   const raw=$('#f-link').value.trim();
@@ -254,7 +263,7 @@ function add(){
   const link=normLink(raw);
   let nome=$('#f-nome').value.trim()||deriveName(raw,link);
   data.unshift({
-    id:uid(), nome, url:link.url, ig:link.ig,
+    id:uid(), nome, url:link.url, ig:link.ig, handle:link.handle,
     cat:$('#f-cat').value, status:$('#f-status').value,
     contato:false, follow1:false, follow2:false,
     finalizada:false, motivo:'', criado:Date.now()
@@ -321,7 +330,7 @@ function render(){
         <div class="ico">${b.ig?'📷':'🌐'}</div>
         <div class="binfo">
           <div class="bname">${esc(b.nome)}</div>
-          <a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.url)}</a>
+          <a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(linkLabel(b))} ↗</a>
           <div class="badges">
             ${b.cat?`<span class="badge cat-${b.cat}">${CAT_LABEL[b.cat]}</span>`:''}
             ${b.status?`<span class="badge st-${b.status}">${ST_LABEL[b.status]}</span>`:''}
@@ -348,6 +357,7 @@ function finCard(b){
       <div class="ico">${b.ig?'📷':'🌐'}</div>
       <div class="binfo">
         <div class="bname">${esc(b.nome)}</div>
+        <a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(linkLabel(b))} ↗</a>
         <div class="badges">
           ${b.cat?`<span class="badge cat-${b.cat}">${CAT_LABEL[b.cat]}</span>`:''}
           ${b.status?`<span class="badge st-${b.status}">${ST_LABEL[b.status]}</span>`:''}
