@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Baby Talks · Prospecção de Marcas</title>
+<style>
+  :root{
+    --bg:#0a0a0a; --surface:#141414; --surface2:#1a1a1a; --border:#1f1f1f;
+    --border2:#2a2a2a; --lime:#c5f02c; --lime-dim:#9bbd22; --text:#f2f2f2;
+    --muted:#8a8a8a; --muted2:#5a5a5a; --red:#ff5c5c; --amber:#f0b32c;
+    --blue:#4c9ff0; --pink:#f472b6; --green:#22c079;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:24px 16px 80px;line-height:1.45}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+  h1 .dot{width:10px;height:10px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime)}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+  /* Add form */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .add{margin-top:20px}
+  .add-row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text],select,textarea{background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+    border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+  input[type=text]:focus,select:focus,textarea:focus{border-color:var(--lime)}
+  input[type=text]::placeholder{color:var(--muted2)}
+  .add .link{flex:1 1 100%}
+  .add .nome{flex:2 1 200px}
+  select{flex:1 1 140px;cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%238a8a8a' stroke-width='1.5' fill='none'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+  .btn{background:var(--lime);color:#0a0a0a;border:none;border-radius:10px;padding:11px 18px;font-weight:700;
+    font-size:14px;cursor:pointer;transition:filter .15s;white-space:nowrap}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+  .btn.ghost:hover{color:var(--text);border-color:var(--muted2)}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:8px;align-items:center;margin:22px 0 12px;flex-wrap:wrap}
+  .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
+  .tab{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:.15s}
+  .tab.on{background:var(--lime);color:#0a0a0a}
+  .spacer{flex:1}
+  .filter{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);
+    background:var(--surface);color:var(--muted);transition:.15s}
+  .chip.on{border-color:var(--lime);color:var(--lime)}
+  .search{flex:1 1 160px;min-width:120px}
+
+  /* List */
+  .list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .brand{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+    display:flex;flex-direction:column;gap:12px}
+  .brand-top{display:flex;align-items:flex-start;gap:12px}
+  .ico{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;font-size:16px;
+    background:var(--surface2);border:1px solid var(--border2)}
+  .binfo{flex:1;min-width:0}
+  .bname{font-weight:700;font-size:15px}
+  .blink{color:var(--muted);font-size:12.5px;text-decoration:none;word-break:break-all;display:inline-block;margin-top:1px}
+  .blink:hover{color:var(--lime)}
+  .badges{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.2px}
+  .cat-decoracao{background:rgba(244,114,182,.14);color:var(--pink)}
+  .cat-servicos{background:rgba(76,159,240,.14);color:var(--blue)}
+  .cat-produtos{background:rgba(240,179,44,.14);color:var(--amber)}
+  .st-parceria{background:rgba(34,192,121,.14);color:var(--green)}
+  .st-patrocinio{background:rgba(197,240,44,.16);color:var(--lime)}
+  .del{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:6px;line-height:1}
+  .del:hover{color:var(--red);background:rgba(255,92,92,.1)}
+
+  /* Steps / checkboxes */
+  .steps{display:flex;gap:8px;flex-wrap:wrap}
+  .step{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border2);
+    border-radius:9px;padding:8px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);
+    user-select:none;transition:.15s;flex:1 1 auto;justify-content:center}
+  .step:hover{border-color:var(--muted2)}
+  .step .box{width:17px;height:17px;border-radius:5px;border:2px solid var(--muted2);display:grid;place-items:center;
+    flex-shrink:0;transition:.15s}
+  .step.done{color:var(--lime);border-color:rgba(197,240,44,.4);background:rgba(197,240,44,.07)}
+  .step.done .box{background:var(--lime);border-color:var(--lime)}
+  .step .box svg{opacity:0;transition:.15s}
+  .step.done .box svg{opacity:1}
+  .step.f2.done{color:#0a0a0a;background:var(--lime);border-color:var(--lime)}
+  .step.f2.done .box{border-color:#0a0a0a}
+  .step.f2.done .box svg path{stroke:#0a0a0a}
+
+  /* Empty */
+  .empty{text-align:center;color:var(--muted2);padding:50px 20px;font-size:14px}
+  .empty .big{font-size:34px;margin-bottom:10px}
+
+  /* Finalizadas */
+  .fin{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;opacity:.85}
+  .fin-top{display:flex;align-items:center;gap:10px}
+  .fin .bname{font-size:14px}
+  .motivo{margin-top:8px;background:var(--surface2);border-left:2px solid var(--lime-dim);border-radius:0 8px 8px 0;
+    padding:8px 12px;font-size:13px;color:#cfcfcf}
+  .motivo .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);display:block;margin-bottom:2px}
+  .reopen{margin-left:auto;font-size:11px;color:var(--muted);background:transparent;border:1px solid var(--border2);
+    border-radius:7px;padding:5px 10px;cursor:pointer}
+  .reopen:hover{color:var(--lime);border-color:var(--lime)}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;place-items:center;padding:20px;z-index:50}
+  .overlay.on{display:grid}
+  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:22px;max-width:440px;width:100%}
+  .modal h3{font-size:17px;margin-bottom:4px}
+  .modal p{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .modal textarea{width:100%;min-height:90px;resize:vertical}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+
+  .count{color:var(--muted2);font-size:12px;font-weight:600;margin-left:2px}
+  @media(max-width:560px){
+    .step{flex:1 1 100%}
+    .add .nome{flex:1 1 100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1><span class="dot"></span> Baby Talks · Prospecção de Marcas</h1>
+    <div class="sub">Cadastre marcas, acompanhe os contatos e segmente quem é quem.</div>
+  </div>
+
+  <!-- ADD -->
+  <div class="card add">
+    <div class="add-row">
+      <input type="text" class="link" id="f-link" placeholder="Cole o link do site ou do Instagram (@perfil ou instagram.com/perfil)">
+    </div>
+    <div class="add-row" style="margin-top:10px">
+      <input type="text" class="nome" id="f-nome" placeholder="Nome da marca (opcional — puxo do link)">
+      <select id="f-cat">
+        <option value="">Categoria…</option>
+        <option value="decoracao">Decoração</option>
+        <option value="servicos">Serviços</option>
+        <option value="produtos">Produtos</option>
+      </select>
+      <select id="f-status">
+        <option value="">Status…</option>
+        <option value="parceria">Parceria</option>
+        <option value="patrocinio">Patrocínio</option>
+      </select>
+      <button class="btn" id="f-add">Adicionar</button>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab on" data-tab="ativas">Ativas <span class="count" id="c-ativas">0</span></button>
+      <button class="tab" data-tab="finalizadas">Finalizadas <span class="count" id="c-fin">0</span></button>
+    </div>
+    <div class="spacer"></div>
+    <input type="text" class="search" id="f-search" placeholder="Buscar…">
+  </div>
+
+  <div class="filter" id="filters" style="margin-bottom:14px">
+    <span class="chip cat on" data-cat="">Todas</span>
+    <span class="chip cat" data-cat="decoracao">Decoração</span>
+    <span class="chip cat" data-cat="servicos">Serviços</span>
+    <span class="chip cat" data-cat="produtos">Produtos</span>
+    <span style="width:1px;background:var(--border2);margin:2px 4px"></span>
+    <span class="chip st on" data-st="">Todos</span>
+    <span class="chip st" data-st="parceria">Parceria</span>
+    <span class="chip st" data-st="patrocinio">Patrocínio</span>
+  </div>
+
+  <div class="list" id="list"></div>
+</div>
+
+<!-- MODAL motivo -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Finalizar prospecção</h3>
+    <p id="modal-sub">Você marcou o Follow 2. Qual o motivo/desfecho? A marca vai pra aba Finalizadas.</p>
+    <textarea id="modal-motivo" placeholder="Ex: Fechou patrocínio · Sem retorno · Não tem interesse este ano…"></textarea>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn" id="modal-save">Finalizar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const KEY='prospeccao-marcas-v1';
+let data=load(), tab='ativas', fCat='', fSt='', fSearch='', pendingId=null;
+
+const CAT_LABEL={decoracao:'Decoração',servicos:'Serviços',produtos:'Produtos'};
+const ST_LABEL={parceria:'Parceria',patrocinio:'Patrocínio'};
+const CHECK='<svg width="11" height="11" viewBox="0 0 12 12"><path d="M2.5 6l2.5 2.5L9.5 3.5" stroke="#0a0a0a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function uid(){return Math.random().toString(36).slice(2,10)}
+
+function normLink(raw){
+  raw=raw.trim();
+  if(!raw) return {url:'',ig:false,handle:''};
+  // @handle
+  if(raw[0]==='@'){const h=raw.slice(1).replace(/\/.*$/,'');return{url:'https://instagram.com/'+h,ig:true,handle:'@'+h}}
+  let url=raw;
+  if(!/^https?:\/\//i.test(url)) url='https://'+url;
+  const ig=/instagram\.com/i.test(url);
+  let handle='';
+  if(ig){const m=url.match(/instagram\.com\/([^\/?#]+)/i); if(m&&m[1]) handle='@'+m[1]}
+  return {url,ig,handle};
+}
+function deriveName(raw,link){
+  if(link.handle) return link.handle;
+  try{const h=new URL(link.url).hostname.replace(/^www\./,''); return h.split('.')[0].replace(/\b\w/g,c=>c.toUpperCase())}
+  catch(e){return raw}
+}
+
+function add(){
+  const raw=$('#f-link').value.trim();
+  if(!raw){$('#f-link').focus();return}
+  const link=normLink(raw);
+  let nome=$('#f-nome').value.trim()||deriveName(raw,link);
+  data.unshift({
+    id:uid(), nome, url:link.url, ig:link.ig,
+    cat:$('#f-cat').value, status:$('#f-status').value,
+    contato:false, follow1:false, follow2:false,
+    finalizada:false, motivo:'', criado:Date.now()
+  });
+  save();
+  $('#f-link').value='';$('#f-nome').value='';$('#f-cat').value='';$('#f-status').value='';
+  $('#f-link').focus();
+  render();
+}
+
+function toggle(id,field){
+  const b=data.find(x=>x.id===id); if(!b) return;
+  if(field==='follow2' && !b.follow2){
+    // marcando follow2 -> pede motivo
+    pendingId=id; $('#modal-motivo').value=''; $('#overlay').classList.add('on');
+    setTimeout(()=>$('#modal-motivo').focus(),50);
+    return;
+  }
+  b[field]=!b[field]; save(); render();
+}
+
+function finalize(){
+  const b=data.find(x=>x.id===pendingId); if(!b) return;
+  b.follow2=true; b.finalizada=true; b.motivo=$('#modal-motivo').value.trim(); b.finalizadaEm=Date.now();
+  save(); $('#overlay').classList.remove('on'); pendingId=null;
+  tab='ativas'; render();
+}
+function reopen(id){
+  const b=data.find(x=>x.id===id); if(!b) return;
+  b.finalizada=false; b.follow2=false; save(); render();
+}
+function del(id){
+  if(!confirm('Remover essa marca de vez?')) return;
+  data=data.filter(x=>x.id!==id); save(); render();
+}
+
+function matchFilter(b){
+  if(fCat && b.cat!==fCat) return false;
+  if(fSt && b.status!==fSt) return false;
+  if(fSearch){const q=fSearch.toLowerCase(); if(!(b.nome+' '+b.url).toLowerCase().includes(q)) return false}
+  return true;
+}
+
+function render(){
+  const ativas=data.filter(b=>!b.finalizada), fin=data.filter(b=>b.finalizada);
+  $('#c-ativas').textContent=ativas.length;
+  $('#c-fin').textContent=fin.length;
+  $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));
+
+  const list=$('#list'); list.innerHTML='';
+  const items=(tab==='ativas'?ativas:fin).filter(matchFilter);
+
+  if(!items.length){
+    list.innerHTML=`<div class="empty"><div class="big">${tab==='ativas'?'🎯':'✅'}</div>${
+      tab==='ativas'?'Nenhuma marca ativa. Cole um link acima pra começar.':'Nenhuma marca finalizada ainda.'}</div>`;
+    return;
+  }
+
+  items.forEach(b=>{
+    if(tab==='finalizadas'){ list.appendChild(finCard(b)); return; }
+    const el=document.createElement('div'); el.className='brand';
+    el.innerHTML=`
+      <div class="brand-top">
+        <div class="ico">${b.ig?'📷':'🌐'}</div>
+        <div class="binfo">
+          <div class="bname">${esc(b.nome)}</div>
+          <a class="blink" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.url)}</a>
+          <div class="badges">
+            ${b.cat?`<span class="badge cat-${b.cat}">${CAT_LABEL[b.cat]}</span>`:''}
+            ${b.status?`<span class="badge st-${b.status}">${ST_LABEL[b.status]}</span>`:''}
+          </div>
+        </div>
+        <button class="del" title="Remover" data-del="${b.id}">×</button>
+      </div>
+      <div class="steps">
+        <div class="step ${b.contato?'done':''}" data-t="${b.id}" data-f="contato">
+          <span class="box">${CHECK}</span> Primeiro contato</div>
+        <div class="step ${b.follow1?'done':''}" data-t="${b.id}" data-f="follow1">
+          <span class="box">${CHECK}</span> Follow 1</div>
+        <div class="step f2 ${b.follow2?'done':''}" data-t="${b.id}" data-f="follow2">
+          <span class="box">${CHECK}</span> Follow 2</div>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+function finCard(b){
+  const el=document.createElement('div'); el.className='fin';
+  el.innerHTML=`
+    <div class="fin-top">
+      <div class="ico">${b.ig?'📷':'🌐'}</div>
+      <div class="binfo">
+        <div class="bname">${esc(b.nome)}</div>
+        <div class="badges">
+          ${b.cat?`<span class="badge cat-${b.cat}">${CAT_LABEL[b.cat]}</span>`:''}
+          ${b.status?`<span class="badge st-${b.status}">${ST_LABEL[b.status]}</span>`:''}
+        </div>
+      </div>
+      <button class="reopen" data-reopen="${b.id}">Reabrir</button>
+      <button class="del" title="Remover" data-del="${b.id}" style="margin-left:6px">×</button>
+    </div>
+    ${b.motivo?`<div class="motivo"><span class="lbl">Motivo / desfecho</span>${esc(b.motivo)}</div>`:''}`;
+  return el;
+}
+
+function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+// events
+$('#f-add').onclick=add;
+$('#f-link').addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+$('#f-nome').addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+$('#list').addEventListener('click',e=>{
+  const step=e.target.closest('.step'); if(step){toggle(step.dataset.t,step.dataset.f);return}
+  const d=e.target.closest('[data-del]'); if(d){del(d.dataset.del);return}
+  const r=e.target.closest('[data-reopen]'); if(r){reopen(r.dataset.reopen);return}
+});
+$$('.tab').forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render()});
+$('#filters').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  if(c.classList.contains('cat')){fCat=c.dataset.cat;$$('.chip.cat').forEach(x=>x.classList.toggle('on',x===c))}
+  if(c.classList.contains('st')){fSt=c.dataset.st;$$('.chip.st').forEach(x=>x.classList.toggle('on',x===c))}
+  render();
+});
+$('#f-search').addEventListener('input',e=>{fSearch=e.target.value;render()});
+$('#modal-cancel').onclick=()=>{$('#overlay').classList.remove('on');pendingId=null};
+$('#modal-save').onclick=finalize;
+$('#overlay').addEventListener('click',e=>{if(e.target.id==='overlay'){$('#overlay').classList.remove('on');pendingId=null}});
+$('#modal-motivo').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))finalize()});
+
+render();
+</script>
+</body>
+</html>
